@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { ToastController } from '@ionic/angular';
 
 @Component({
   selector: 'app-tab2',
@@ -9,7 +10,7 @@ export class Tab2Page {
   text = "";
   length = 16;
   toggle = {uppercase: true, lowercase: true, numbers: true, symbols: true};
-  constructor(){ this.generatePass();  }
+  constructor(public toastController: ToastController){ this.generatePass();  }
 
   generatePass()
   {
@@ -43,7 +44,16 @@ export class Tab2Page {
 
   copyPass()
   {
+    this.okToast();
 
+  }
+
+  async okToast() {
+    const toast = await this.toastController.create({
+      message: 'Your password is copied to clipboard for selected duration.',
+      duration: 3000
+    });
+    toast.present();
   }
 }
 

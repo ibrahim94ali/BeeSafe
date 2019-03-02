@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { AlertController } from '@ionic/angular';
+import { AlertController, ToastController} from '@ionic/angular';
 
 @Component({
   selector: 'app-tab3',
@@ -8,7 +8,8 @@ import { AlertController } from '@ionic/angular';
 })
 export class Tab3Page {
   duration=[true,false,false,false];
-  constructor(public alertController: AlertController){}
+  fingerprintOption = true;
+  constructor(public alertController: AlertController, public toastController: ToastController){}
   signOut()
   {
 
@@ -86,6 +87,7 @@ export class Tab3Page {
               this.duration[3] = true;
             }
             console.log('Confirm Ok ', data);
+            this.okToast();
           }
         }
       ]
@@ -150,6 +152,14 @@ export class Tab3Page {
         }, {
           text: 'Ok',
           handler: (data) => {
+            if(data.newPassword !== data.newPassword2)
+            {
+              this.passwordError();
+            }
+            else
+            {
+              this.okToast();
+            }
             console.log('Confirm Ok', data);
           }
         }
@@ -157,5 +167,60 @@ export class Tab3Page {
     });
 
     await alert.present();
+  }
+
+  async fingerprint() {
+    const alert = await this.alertController.create({
+      header: 'Fingerprint Scanner',
+      buttons: [
+        {
+          text: 'Disable',
+          cssClass: 'secondary',
+          handler: () => {
+            this.fingerprintOption = false;
+            this.okToast();
+            console.log( this.fingerprintOption);
+          }
+        }, {
+          text: 'Enable',
+          handler: () => {
+            this.fingerprintOption = true;
+            this.okToast();
+            console.log( this.fingerprintOption);
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
+  
+  async okToast() {
+    const toast = await this.toastController.create({
+      message: 'Your settings have been saved.',
+      duration: 3000
+    });
+    toast.present();
+  }
+
+  async passwordError() {
+    const toast = await this.toastController.create({
+      message: 'Your passwords do not match!',
+      showCloseButton: true,
+      position: 'top',
+      closeButtonText: 'OK'
+    });
+    toast.present();
+  }
+
+  async emailError() {
+    const toast = await this.toastController.create({
+      message: 'Your e-mail is already used.',
+      showCloseButton: true,
+      position: 'top',
+      closeButtonText: 'OK'
+    });
+    toast.present();
   }
 }

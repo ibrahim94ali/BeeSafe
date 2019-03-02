@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { ToastController } from '@ionic/angular';
 
 @Component({
   selector: 'app-newentry',
@@ -12,7 +13,7 @@ export class NewentryPage implements OnInit {
 
   showPass = true;
 
-  constructor(private router: Router) { }
+  constructor(private router: Router, public toastController: ToastController) { }
 
   ngOnInit() {
   }
@@ -20,6 +21,16 @@ export class NewentryPage implements OnInit {
   save()
   {
     console.log(this.account);
+    this.okToast();
     this.router.navigateByUrl('/tabs/tab1');
   }
+
+  async okToast() {
+    const toast = await this.toastController.create({
+      message: 'Your account information is saved.',
+      duration: 3000
+    });
+    toast.present();
+  }
+  
 }
