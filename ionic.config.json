@@ -1,5 +1,7 @@
 {
   "name": "bee-safe",
-  "integrations": {},
+  "integrations": {
+    "cordova": {}
+  },
   "type": "angular"
 }

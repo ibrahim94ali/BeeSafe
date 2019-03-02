@@ -1,0 +1,33 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title id="header">Enter New Account Information</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content padding>
+
+<ion-item>
+  <ion-label position="floating">Account Name</ion-label>
+  <ion-input [(ngModel)]="account.name"></ion-input>
+</ion-item>
+
+<ion-item>
+    <ion-label position="floating">Username or E-mail</ion-label>
+    <ion-input type="email" [(ngModel)]="account.email"></ion-input>
+  </ion-item>
+
+  <ion-item>
+      <ion-label position="floating">Password</ion-label>
+      <ion-input *ngIf="showPass" type="password"  [(ngModel)]="account.password"></ion-input>
+      <ion-icon *ngIf="showPass"  slot="end" name="eye" (click)="showPass=false"></ion-icon>
+      <ion-input *ngIf="!showPass" [(ngModel)]="account.password"></ion-input>
+      <ion-icon *ngIf="!showPass"  slot="end" name="eye-off" (click)="showPass=true"></ion-icon>
+    </ion-item>
+
+    <div class="buttons">
+    <ion-button  expand="full" (click)="save()">
+        Save
+        <ion-icon  slot="end" name="checkmark"></ion-icon>
+      </ion-button>
+    </div>
+</ion-content>

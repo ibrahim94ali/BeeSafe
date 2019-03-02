@@ -1,9 +1,60 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>
-      Tab Two
+    <ion-title id="header">
+      Password Generator
     </ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content></ion-content>
+<ion-content>
+  <ion-card>
+      <ion-card-header>
+          <ion-card-subtitle>Options:</ion-card-subtitle>
+      </ion-card-header>
+      <ion-item>
+          <ion-range pin="true" min="8" max="32" snaps="true" [(ngModel)]="length">
+          <ion-label slot="start">8</ion-label>
+            <ion-label slot="end">32</ion-label>
+          </ion-range>
+        </ion-item>
+      <ion-item>
+          <ion-label>A-Z</ion-label>
+          <ion-toggle [(ngModel)]="toggle.uppercase"></ion-toggle>
+        </ion-item>
+      
+        <ion-item>
+          <ion-label>a-z</ion-label>
+          <ion-toggle [(ngModel)]="toggle.lowercase"></ion-toggle>
+        </ion-item>
+      
+        <ion-item>
+          <ion-label>0-9</ion-label>
+          <ion-toggle [(ngModel)]="toggle.numbers"></ion-toggle>
+        </ion-item>
+
+        <ion-item>
+            <ion-label>Symbols</ion-label>
+            <ion-toggle [(ngModel)]="toggle.symbols"></ion-toggle>
+          </ion-item>
+  </ion-card>
+
+  <ion-card>
+      <ion-card-header>
+          <ion-card-title id="pass">{{text}}</ion-card-title>
+      </ion-card-header>
+  </ion-card>
+
+  <div class="first">
+
+  <ion-button (click)="generatePass()">Generate
+    <ion-icon  slot="end" name="hammer"></ion-icon>
+  </ion-button>
+</div>
+<div class="second">
+  <ion-button (click)="copyPass()">Copy to Clipboard
+    <ion-icon  slot="end" name="clipboard"></ion-icon>
+  </ion-button>
+
+  </div>
+
+</ion-content>
