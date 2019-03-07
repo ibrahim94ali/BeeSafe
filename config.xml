@@ -83,5 +83,7 @@
     <plugin name="cordova-plugin-ionic-webview" spec="^3.0.0" />
     <plugin name="cordova-plugin-ionic-keyboard" spec="^2.0.5" />
     <plugin name="cordova-clipboard" spec="1.2.1" />
+    <plugin name="cordova-plugin-fingerprint-aio" spec="1.6.0" />
+    <plugin name="@sholtee/cordova-plugin-exit" spec="0.0.1" />
     <engine name="android" spec="7.1.4" />
 </widget>
