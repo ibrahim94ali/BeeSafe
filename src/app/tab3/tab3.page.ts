@@ -17,7 +17,7 @@ export class Tab3Page {
 
   async changeDuration() {
     const alert = await this.alertController.create({
-      header: 'Copied Password Duration on Clipboard',
+      header: 'Auto-clear Password After',
       inputs: [
         {
           name: '30s',

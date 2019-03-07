@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { ToastController } from '@ionic/angular';
+import { Clipboard } from '@ionic-native/clipboard/ngx';
 
 @Component({
   selector: 'app-tab2',
@@ -9,8 +10,11 @@ import { ToastController } from '@ionic/angular';
 export class Tab2Page {
   text = "";
   length = 16;
+  clearPassTime = 30;
+  timeLeft = this.clearPassTime;
+  interval = null;
   toggle = {uppercase: true, lowercase: true, numbers: true, symbols: true};
-  constructor(public toastController: ToastController){ this.generatePass();  }
+  constructor(public toastController: ToastController, private clipboard: Clipboard){ this.generatePass();  }
 
   generatePass()
   {
@@ -44,8 +48,23 @@ export class Tab2Page {
 
   copyPass()
   {
+    if(this.timeLeft !== this.clearPassTime)
+    {
+      clearInterval(this.interval);
+    }
+    this.clipboard.copy(this.text);
+    this.timeLeft = this.clearPassTime;
     this.okToast();
-
+    this.interval = setInterval(() => {
+      if(this.timeLeft > 0) {
+        this.timeLeft--;
+      } else {
+        clearInterval(this.interval);
+        this.timeLeft = this.clearPassTime;
+        this.clipboard.clear();
+      }
+    },1000);
+    
   }
 
   async okToast() {

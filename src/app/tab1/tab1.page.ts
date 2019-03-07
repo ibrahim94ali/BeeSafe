@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
-import { ActionSheetController, ToastController } from '@ionic/angular';
+import { ActionSheetController, ToastController, NavController, AlertController } from '@ionic/angular';
+import { Clipboard } from '@ionic-native/clipboard/ngx';
 
 @Component({
   selector: 'app-tab1',
@@ -12,29 +13,28 @@ export class Tab1Page {
   twitter = {name: "twitter", username: "ibrahim_ali__", password: "ibra"};
   list = [this.facebook, this.twitter];
 
-  constructor(private router: Router, public actionSheetController: ActionSheetController, public toastController: ToastController) { }
+  clearPassTime = 30;
+  timeLeft = this.clearPassTime;
+  interval = null;
+
+  constructor(private router: Router, public actionSheetController: ActionSheetController, public toastController: ToastController,
+    public navCtrl: NavController, public alertController: AlertController, private clipboard: Clipboard) { }
 
   async presentActionSheet(l:any) {
     const actionSheet = await this.actionSheetController.create({
       header:  l.name,
       buttons: [{
-        text: 'View',
-        icon: 'eye',
-        handler: () => {
-          console.log('View clicked');
-        }
-      }, {
         text: 'Copy Password',
         icon: 'clipboard',
         handler: () => {
+          this.copyPassword(l);
           this.copiedToast();
-          console.log('Copy clicked');
         }
       },{
-        text: 'Edit',
-        icon: 'build',
+        text: 'View / Edit',
+        icon: 'eye',
         handler: () => {
-          console.log('Edit clicked');
+          this.editEntry(l);
         }
       },{
         text: 'Delete',
@@ -50,7 +50,6 @@ export class Tab1Page {
         icon: 'close',
         role: 'cancel',
         handler: () => {
-          console.log('Cancel clicked');
         }
       }]
     });
@@ -76,5 +75,29 @@ export class Tab1Page {
   addNew()
   {
     this.router.navigateByUrl('/tabs/tab1/newentry');
+  }
+
+  editEntry(l:any)
+  {
+    this.navCtrl.navigateForward(`/tabs/tab1/editentry/${l.name}/${l.username}/${l.password}`);
+  }
+
+  copyPassword(l:any)
+  {
+    if(this.timeLeft !== this.clearPassTime)
+    {
+      clearInterval(this.interval);
+    }
+    this.clipboard.copy(l.password);
+    this.timeLeft = this.clearPassTime;
+    this.interval = setInterval(() => {
+      if(this.timeLeft > 0) {
+        this.timeLeft--;
+      } else {
+        clearInterval(this.interval);
+        this.timeLeft = this.clearPassTime;
+        this.clipboard.clear();
+      }
+    },1000);
   }
 }

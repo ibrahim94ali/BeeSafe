@@ -7,10 +7,9 @@
 </ion-header>
 
 <ion-content>
+    
   <ion-card>
-      <ion-card-header>
-          <ion-card-subtitle>Options:</ion-card-subtitle>
-      </ion-card-header>
+     
       <ion-item>
           <ion-range pin="true" min="8" max="32" snaps="true" [(ngModel)]="length">
           <ion-label slot="start">8</ion-label>
@@ -38,7 +37,7 @@
           </ion-item>
   </ion-card>
 
-  <ion-card>
+  <ion-card id="card" (click)="copyPass()">
       <ion-card-header>
           <ion-card-title id="pass">{{text}}</ion-card-title>
       </ion-card-header>
@@ -50,11 +49,5 @@
     <ion-icon  slot="end" name="hammer"></ion-icon>
   </ion-button>
 </div>
-<div class="second">
-  <ion-button (click)="copyPass()">Copy to Clipboard
-    <ion-icon  slot="end" name="clipboard"></ion-icon>
-  </ion-button>
-
-  </div>
 
 </ion-content>

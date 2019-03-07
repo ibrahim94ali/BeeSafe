@@ -16,7 +16,11 @@ const routes: Routes = [
           },
           {
             path: 'newentry',
-           loadChildren: '../newentry/newentry.module#NewentryPageModule'
+            loadChildren: '../newentry/newentry.module#NewentryPageModule'
+          },
+          {
+            path: 'editentry/:name/:email/:pass',
+            loadChildren: '../editentry/editentry.module#EditentryPageModule'
           }
         ]
       },
@@ -58,4 +62,4 @@ const routes: Routes = [
   ],
   exports: [RouterModule]
 })
-export class TabsPageRoutingModule {}
+export class TabsPageRoutingModule { }
