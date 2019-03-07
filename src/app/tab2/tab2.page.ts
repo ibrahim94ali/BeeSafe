@@ -70,6 +70,7 @@ export class Tab2Page {
   async okToast() {
     const toast = await this.toastController.create({
       message: 'Your password is copied to clipboard for selected duration.',
+      position: 'top',
       duration: 3000
     });
     toast.present();

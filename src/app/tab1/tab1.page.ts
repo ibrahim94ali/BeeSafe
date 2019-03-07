@@ -2,6 +2,8 @@ import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { ActionSheetController, ToastController, NavController, AlertController } from '@ionic/angular';
 import { Clipboard } from '@ionic-native/clipboard/ngx';
+declare var require: any
+var KintoClient = require("kinto-http");
 
 @Component({
   selector: 'app-tab1',
@@ -9,9 +11,9 @@ import { Clipboard } from '@ionic-native/clipboard/ngx';
   styleUrls: ['tab1.page.scss']
 })
 export class Tab1Page {
-  facebook = {name: "facebook", username: "ibrahim94ali", password: "ibra"};
-  twitter = {name: "twitter", username: "ibrahim_ali__", password: "ibra"};
-  list = [this.facebook, this.twitter];
+  list = [];
+  secretString = `${"ibrahim94ali"}:${"admin123"}`;
+  client = null;
 
   clearPassTime = 30;
   timeLeft = this.clearPassTime;
@@ -19,6 +21,28 @@ export class Tab1Page {
 
   constructor(private router: Router, public actionSheetController: ActionSheetController, public toastController: ToastController,
     public navCtrl: NavController, public alertController: AlertController, private clipboard: Clipboard) { }
+
+    ionViewWillEnter()
+    {
+      console.log("girdimwillenter");
+      this.list = [];
+      
+        this.client.bucket("mysafe").collection("accounts")
+        .listRecords()
+        .then(result => {
+          for (let i of result.data) {
+          this.list.push(i);
+          }
+        });
+    }
+
+    ngOnInit(){
+      this.client = new KintoClient("https://kinto.dev.mozaws.net/v1/", {
+        headers: {
+          Authorization: "Basic " + btoa(this.secretString)
+        }
+      });
+}
 
   async presentActionSheet(l:any) {
     const actionSheet = await this.actionSheetController.create({
@@ -41,8 +65,9 @@ export class Tab1Page {
         role: 'destructive',
         icon: 'trash',
         handler: () => {
-          this.deletedToast();
-          console.log('Delete clicked');
+          this.client.bucket("mysafe").collection("accounts")
+          .deleteRecord(l.id)
+          .then(() => {this.deletedToast(); this.ionViewWillEnter()});
         }
       }, 
       {
@@ -59,6 +84,7 @@ export class Tab1Page {
   async copiedToast() {
     const toast = await this.toastController.create({
       message: 'Your password is copied to clipboard for selected duration.',
+      position: 'top',
       duration: 3000
     });
     toast.present();
@@ -67,6 +93,7 @@ export class Tab1Page {
   async deletedToast() {
     const toast = await this.toastController.create({
       message: 'Your account is deleted.',
+      position: 'top',
       duration: 3000
     });
     toast.present();
@@ -79,7 +106,7 @@ export class Tab1Page {
 
   editEntry(l:any)
   {
-    this.navCtrl.navigateForward(`/tabs/tab1/editentry/${l.name}/${l.username}/${l.password}`);
+    this.navCtrl.navigateForward(`/tabs/tab1/editentry/${l.name}/${l.email}/${l.password}`);
   }
 
   copyPassword(l:any)

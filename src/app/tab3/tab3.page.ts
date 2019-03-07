@@ -199,6 +199,7 @@ export class Tab3Page {
   async okToast() {
     const toast = await this.toastController.create({
       message: 'Your settings have been saved.',
+      position: 'top',
       duration: 3000
     });
     toast.present();
