@@ -19,7 +19,7 @@ const routes: Routes = [
             loadChildren: '../newentry/newentry.module#NewentryPageModule'
           },
           {
-            path: 'editentry/:name/:email/:pass',
+            path: 'editentry/:name/:email/:pass/:id',
             loadChildren: '../editentry/editentry.module#EditentryPageModule'
           }
         ]

@@ -9,9 +9,10 @@ import { ToastController } from '@ionic/angular';
 })
 export class EditentryPage implements OnInit {
 
-  account = {name: "", email: "", password: ""};
+  account = {name: "", email: "", password: "", id: ""};
 
   showPass = true;
+  db = null;
 
   constructor(private router: Router, public toastController: ToastController, private route: ActivatedRoute) {   }
 
@@ -19,13 +20,31 @@ export class EditentryPage implements OnInit {
     this.account.name = this.route.snapshot.paramMap.get('name');
     this.account.email = this.route.snapshot.paramMap.get('email');
     this.account.password = this.route.snapshot.paramMap.get('pass');
+    this.account.id = this.route.snapshot.paramMap.get('id');
+
+   
+      const secretString = `${"ibrahim94ali"}:${"admin123"}`;
+
+      this.db = new window.Kinto({
+        remote: "https://kinto.dev.mozaws.net/v1/", headers: {
+          Authorization: "Basic " + btoa(secretString)
+        }
+      });
 }
 
-  save()
+  async save()
   {
-    console.log(this.account);
-    this.okToast();
-    this.router.navigateByUrl('/tabs/tab1');
+    const accounts = this.db.collection("accounts");
+
+    
+    await accounts.update(this.account)
+      .then(() => {
+        this.okToast();
+        this.router.navigateByUrl('tabs/tab1');
+      })
+      .catch(e => console.log(e));
+
+    await accounts.sync();
   }
 
   async okToast() {

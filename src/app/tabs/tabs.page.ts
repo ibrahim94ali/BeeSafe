@@ -23,7 +23,7 @@ export class TabsPage {
     });
 
     this.accounts = this.db.collection("accounts");
-    this.synchData()
+    this.synchData();
   }
 
   fingerPrintScanner() {

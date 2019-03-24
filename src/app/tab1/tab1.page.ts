@@ -13,6 +13,7 @@ export class Tab1Page {
   secretString = `${"ibrahim94ali"}:${"admin123"}`;
   db = null;
   accounts = null;
+  settings = null;
 
   clearPassTime = 30;
   timeLeft = this.clearPassTime;
@@ -25,6 +26,8 @@ export class Tab1Page {
     this.list = [];
 
     this.getAccounts();
+    if(this.timeLeft === 30 || this.timeLeft === 45 || this.timeLeft === 60 || this.timeLeft === 0 )
+    this.getSettings();
   }
 
   ngOnInit() {
@@ -36,6 +39,7 @@ export class Tab1Page {
     });
 
     this.accounts = this.db.collection("accounts");
+    this.settings = this.db.collection("settings");
   }
 
 
@@ -48,7 +52,36 @@ export class Tab1Page {
       })
   }
 
-
+  async getSettings() {
+    let myTimer;
+    await this.settings.list()
+      .then((arr) => {
+        if (arr.data.length > 0) {
+          myTimer = arr.data[0].autoClear;
+        }
+      });
+      if(myTimer === "30s")
+      {
+        this.clearPassTime = 30;
+      }
+      else if(myTimer === "45s")
+      {
+        this.clearPassTime = 45;
+      }
+      else if(myTimer === "1m")
+      {
+        this.clearPassTime = 60;
+      }
+      else if (myTimer === "Never")
+      {
+        this.clearPassTime = 0;
+      }
+      else
+      {
+        console.log("error");
+      }
+      this.timeLeft = this.clearPassTime;
+    }
 
   async presentActionSheet(l: any) {
     const actionSheet = await this.actionSheetController.create({
@@ -108,7 +141,7 @@ export class Tab1Page {
   }
 
   editEntry(l: any) {
-    this.navCtrl.navigateForward(`/tabs/tab1/editentry/${l.name}/${l.email}/${l.password}`);
+    this.navCtrl.navigateForward(`/tabs/tab1/editentry/${l.name}/${l.email}/${l.password}/${l.id}`);
   }
 
   copyPassword(l: any) {
@@ -117,6 +150,10 @@ export class Tab1Page {
     }
     this.clipboard.copy(l.password);
     this.timeLeft = this.clearPassTime;
+    if(this.clearPassTime === 0)
+    {
+      return;
+    }
     this.interval = setInterval(() => {
       if (this.timeLeft > 0) {
         this.timeLeft--;
@@ -132,6 +169,8 @@ export class Tab1Page {
     await this.accounts.delete(l.id)
       .then(() => {
         this.deletedToast(); this.ionViewWillEnter()
-      })
+      });
+
+    await this.accounts.sync();
   }
 }
