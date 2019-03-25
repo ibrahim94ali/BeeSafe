@@ -1,6 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ToastController } from '@ionic/angular';
+import { AuthenticationService } from '../services/authentication.service';
+declare var require: any
+var CryptoJS = require("crypto-js");
 
 @Component({
   selector: 'app-newentry',
@@ -11,34 +14,51 @@ export class NewentryPage implements OnInit {
 
   account = { name: "", email: "", password: "" };
   db = null;
+  autoSync = false;
+  secretString = null;
 
   showPass = true;
 
-  constructor(private router: Router, public toastController: ToastController) { }
+  constructor(private router: Router, public toastController: ToastController,
+    private authService: AuthenticationService){}
 
-  ngOnInit() {
-    const secretString = `${"ibrahim94ali"}:${"admin123"}`;
+    ngOnInit(){
+   
+    this.secretString = this.authService.getId();
+    
 
     this.db = new window.Kinto({
       remote: "https://kinto.dev.mozaws.net/v1/", headers: {
-        Authorization: "Basic " + btoa(secretString)
+        Authorization: "Basic " + this.secretString
       }
+    });
+    const settings = this.db.collection("settings");
+    this.autoSyncF(settings);
+  }
+
+  async autoSyncF(settings: any)
+  {
+   await settings.list({filters: {credentials: this.secretString}})
+    .then(arr => {
+      this.autoSync = arr.data[0].autoSync;
     });
   }
 
   async save() {
-
+    this.cipherPassword();
     const accounts = this.db.collection("accounts");
 
-    
-    await accounts.create({ name: this.account.name, email: this.account.email, password: this.account.password })
+
+    await accounts.create({ name: this.account.name, email: this.account.email, password: this.account.password, credentials: this.secretString })
       .then(() => {
         this.okToast();
-        this.router.navigateByUrl('tabs/tab1');
+        this.router.navigateByUrl('app/tabs/tab1');
       })
       .catch(e => console.log(e));
 
-    await accounts.sync();
+      if(this.autoSync===true){
+        await accounts.sync();
+        }
   }
 
   async okToast() {
@@ -47,6 +67,11 @@ export class NewentryPage implements OnInit {
       duration: 3000
     });
     toast.present();
+  }
+
+  cipherPassword() {
+    var ciphertext = CryptoJS.AES.encrypt(this.account.password, this.secretString).toString();
+    this.account.password = ciphertext;
   }
 
 }

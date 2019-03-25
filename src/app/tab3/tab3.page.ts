@@ -1,33 +1,45 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { AlertController, ToastController } from '@ionic/angular';
+import { AuthenticationService } from '../services/authentication.service';
 
 @Component({
   selector: 'app-tab3',
   templateUrl: 'tab3.page.html',
   styleUrls: ['tab3.page.scss']
 })
-export class Tab3Page {
-  settingsData = { autoClear: "30s", fingerprint: false, autoFill: false, id:"", autoSync: false };
+export class Tab3Page implements OnInit  {
+  settingsData = { autoClear: "30s", fingerprint: false, autoFill: false, id:"", autoSync: false, credentials: "" };
   duration = [true, false, false, false];
   db = null;
   settings = null;
-  secretString = `${"ibrahim94ali"}:${"admin123"}`;
-  constructor(public alertController: AlertController, public toastController: ToastController) { }
+  accounts = null;
+  secretString = null;
+  constructor(public alertController: AlertController, public toastController: ToastController,
+    private authService: AuthenticationService) { }
+
+  
+  ionViewWillEnter()
+  {
+    console.log(this.settingsData);
+  }
 
   ngOnInit() {
 
+    this.secretString = this.authService.getId();
+
     this.db = new window.Kinto({
       remote: "https://kinto.dev.mozaws.net/v1/", headers: {
-        Authorization: "Basic " + btoa(this.secretString)
+        Authorization: "Basic " + this.secretString
       }
     });
 
     this.settings = this.db.collection("settings");
+    this.accounts = this.db.collection("accounts");
     this.getSettings();
   }
 
   async getSettings() {
-    await this.settings.list()
+    await this.settings.list({filters: {credentials: this.secretString}})
       .then((arr) => {
         if(arr.data.length > 0){
         this.settingsData.autoClear = arr.data[0].autoClear;
@@ -35,22 +47,17 @@ export class Tab3Page {
         this.settingsData.autoFill = arr.data[0].autoFill;
         this.settingsData.id = arr.data[0].id;
         this.settingsData.autoSync = arr.data[0].autoSync;
-        }
-        else{
-          this.firstSettings();
+        this.settingsData.credentials = arr.data[0].credentials;
         }
       })
       .catch(e => {
         console.log(e);
-      })
-      
-      console.log(this.settingsData);
+      });
       this.setAutoClear();
   }
 
   async autoSync()
   {
-    console.log(this.settingsData);
     this.settings.update(this.settingsData);
 
     if(this.settingsData.autoSync === true)
@@ -63,7 +70,6 @@ export class Tab3Page {
   async autoFill()
   {
     //fill permittions
-    console.log(this.settingsData);
     this.settings.update(this.settingsData);
 
     if(this.settingsData.autoSync === true)
@@ -72,11 +78,6 @@ export class Tab3Page {
     }
   }
 
-  async firstSettings()
-  {
-    let newSettings = { autoClear: "30s", fingerprint: false, autoFill: false, autoSync: false }
-    await this.settings.create(newSettings);
-  }
   setAutoClear()
   {
     if(this.settingsData.autoClear === "30s")
@@ -96,8 +97,9 @@ export class Tab3Page {
       this.duration = [false, false, false, true];
     }
   }
-  signOut() {
-
+  async signOut()
+  {
+        this.authService.logout();
   }
 
   async changeDuration() {
@@ -139,7 +141,6 @@ export class Tab3Page {
           role: 'cancel',
           cssClass: 'secondary',
           handler: () => {
-            console.log('Confirm Cancel');
           }
         }, {
           text: 'Ok',
@@ -173,83 +174,11 @@ export class Tab3Page {
               this.duration[3] = true;
               this.settingsData.autoClear = "Never";
             }
-            console.log('Confirm Ok ', data);
             this.settings.update(this.settingsData);
             if(this.settingsData.autoSync === true){
             this.synchronize();
             }
             this.okToast();
-          }
-        }
-      ]
-    });
-
-    await alert.present();
-  }
-
-  async changeEmail() {
-    const alert = await this.alertController.create({
-      header: 'Change Email',
-      inputs: [
-        {
-          name: 'newEmail',
-          type: 'text',
-          placeholder: 'Your new e-mail'
-        }
-      ],
-      buttons: [
-        {
-          text: 'Cancel',
-          role: 'cancel',
-          cssClass: 'secondary',
-          handler: () => {
-            console.log('Confirm Cancel');
-          }
-        }, {
-          text: 'Ok',
-          handler: (data) => {
-            console.log('Confirm Ok', data);
-          }
-        }
-      ]
-    });
-
-    await alert.present();
-  }
-
-  async changePassword() {
-    const alert = await this.alertController.create({
-      header: 'Change Master Password',
-      inputs: [
-        {
-          name: 'newPassword',
-          type: 'password',
-          placeholder: 'New Password'
-        },
-        {
-          name: 'newPassword2',
-          type: 'password',
-          placeholder: 'Re-enter the New Password'
-        }
-      ],
-      buttons: [
-        {
-          text: 'Cancel',
-          role: 'cancel',
-          cssClass: 'secondary',
-          handler: () => {
-            console.log('Confirm Cancel');
-          }
-        }, {
-          text: 'Ok',
-          handler: (data) => {
-            if (data.newPassword !== data.newPassword2) {
-              this.passwordError();
-            }
-            else {
-              this.okToast();
-            }
-            console.log('Confirm Ok', data);
           }
         }
       ]
@@ -310,22 +239,11 @@ export class Tab3Page {
     toast.present();
   }
 
-  async emailError() {
-    const toast = await this.toastController.create({
-      message: 'Your e-mail is already used.',
-      showCloseButton: true,
-      position: 'top',
-      closeButtonText: 'OK'
-    });
-    toast.present();
-  }
-
   async synchronize() {
-    const secretString = `${"ibrahim94ali"}:${"admin123"}`;
 
     const db = new window.Kinto({
       remote: "https://kinto.dev.mozaws.net/v1/", headers: {
-        Authorization: "Basic " + btoa(secretString)
+        Authorization: "Basic " + this.secretString
       }
     });
 

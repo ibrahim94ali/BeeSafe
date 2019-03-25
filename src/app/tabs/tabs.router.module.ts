@@ -19,7 +19,7 @@ const routes: Routes = [
             loadChildren: '../newentry/newentry.module#NewentryPageModule'
           },
           {
-            path: 'editentry/:name/:email/:pass/:id',
+            path: 'editentry/:id',
             loadChildren: '../editentry/editentry.module#EditentryPageModule'
           }
         ]
@@ -41,17 +41,12 @@ const routes: Routes = [
             loadChildren: '../tab3/tab3.module#Tab3PageModule'
           }
         ]
-      },
-      {
-        path: '',
-        redirectTo: '/tabs/tab1',
-        pathMatch: 'full'
       }
     ]
   },
   {
     path: '',
-    redirectTo: '/tabs/tab1',
+    redirectTo: 'tabs/tab1',
     pathMatch: 'full'
   }
 ];

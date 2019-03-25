@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { ToastController } from '@ionic/angular';
 import { Clipboard } from '@ionic-native/clipboard/ngx';
+import { AuthenticationService } from '../services/authentication.service';
 
 @Component({
   selector: 'app-tab2',
@@ -13,17 +14,20 @@ export class Tab2Page {
   clearPassTime = 30;
   db = null;
   settings = null;
-  secretString = `${"ibrahim94ali"}:${"admin123"}`;
+  secretString = null;
   timeLeft = this.clearPassTime;
   interval = null;
   toggle = { uppercase: true, lowercase: true, numbers: true, symbols: true };
-  constructor(public toastController: ToastController, private clipboard: Clipboard) { this.generatePass(); }
+  constructor(public toastController: ToastController, private clipboard: Clipboard,
+    private authService: AuthenticationService) { this.generatePass(); }
 
 
   ionViewWillEnter() {
+    this.secretString = this.authService.getId();
+
     this.db = new window.Kinto({
       remote: "https://kinto.dev.mozaws.net/v1/", headers: {
-        Authorization: "Basic " + btoa(this.secretString)
+        Authorization: "Basic " + this.secretString
       }
     });
 
@@ -34,7 +38,7 @@ export class Tab2Page {
 
   async getSettings() {
     let myTimer;
-    await this.settings.list()
+    await this.settings.list({filters: {credentials: this.secretString}})
       .then((arr) => {
         if (arr.data.length > 0) {
           myTimer = arr.data[0].autoClear;

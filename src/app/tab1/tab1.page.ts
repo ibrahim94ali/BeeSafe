@@ -2,6 +2,9 @@ import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { ActionSheetController, ToastController, NavController, AlertController } from '@ionic/angular';
 import { Clipboard } from '@ionic-native/clipboard/ngx';
+import { AuthenticationService } from '../services/authentication.service';
+declare var require: any
+var CryptoJS = require("crypto-js");
 
 @Component({
   selector: 'app-tab1',
@@ -10,7 +13,7 @@ import { Clipboard } from '@ionic-native/clipboard/ngx';
 })
 export class Tab1Page {
   list = [];
-  secretString = `${"ibrahim94ali"}:${"admin123"}`;
+  secretString = null;
   db = null;
   accounts = null;
   settings = null;
@@ -18,23 +21,26 @@ export class Tab1Page {
   clearPassTime = 30;
   timeLeft = this.clearPassTime;
   interval = null;
+  autoSync = false;
 
   constructor(private router: Router, public actionSheetController: ActionSheetController, public toastController: ToastController,
-    public navCtrl: NavController, public alertController: AlertController, private clipboard: Clipboard) { }
+    public navCtrl: NavController, public alertController: AlertController, private clipboard: Clipboard,
+    private authService: AuthenticationService) { }
 
   ionViewWillEnter() {
     this.list = [];
 
     this.getAccounts();
-    if(this.timeLeft === 30 || this.timeLeft === 45 || this.timeLeft === 60 || this.timeLeft === 0 )
-    this.getSettings();
+    if (this.timeLeft === 30 || this.timeLeft === 45 || this.timeLeft === 60 || this.timeLeft === 0)
+      this.getSettings();
   }
 
-  ngOnInit() {
+  async ngOnInit() {
 
+    this.secretString = this.authService.getId();
     this.db = new window.Kinto({
       remote: "https://kinto.dev.mozaws.net/v1/", headers: {
-        Authorization: "Basic " + btoa(this.secretString)
+        Authorization: "Basic " + this.secretString
       }
     });
 
@@ -42,11 +48,19 @@ export class Tab1Page {
     this.settings = this.db.collection("settings");
   }
 
+  deCipherPassword(ciphertext: any) {
+    // Decrypt
+    var bytes = CryptoJS.AES.decrypt(ciphertext, this.secretString);
+    var plaintext = bytes.toString(CryptoJS.enc.Utf8);
+    return plaintext;
+  }
+
 
   async getAccounts() {
-    await this.accounts.list({ order: "name" })
+    await this.accounts.list({filters: {credentials: this.secretString}, order: "name" , })
       .then((arr) => {
         for (let i of arr.data) {
+          i.password = this.deCipherPassword(i.password);
           this.list.push(i);
         }
       })
@@ -54,34 +68,31 @@ export class Tab1Page {
 
   async getSettings() {
     let myTimer;
-    await this.settings.list()
+    await this.settings.list({filters: {credentials: this.secretString}})
       .then((arr) => {
         if (arr.data.length > 0) {
           myTimer = arr.data[0].autoClear;
+          this.autoSync = arr.data[0].autoSync;
         }
       });
-      if(myTimer === "30s")
-      {
-        this.clearPassTime = 30;
-      }
-      else if(myTimer === "45s")
-      {
-        this.clearPassTime = 45;
-      }
-      else if(myTimer === "1m")
-      {
-        this.clearPassTime = 60;
-      }
-      else if (myTimer === "Never")
-      {
-        this.clearPassTime = 0;
-      }
-      else
-      {
-        console.log("error");
-      }
-      this.timeLeft = this.clearPassTime;
+    if (myTimer === "30s") {
+      this.clearPassTime = 30;
     }
+    else if (myTimer === "45s") {
+      this.clearPassTime = 45;
+    }
+    else if (myTimer === "1m") {
+      this.clearPassTime = 60;
+    }
+    else if (myTimer === "Never") {
+      this.clearPassTime = 0;
+    }
+    else {
+      //first time
+      console.log("first time");
+    }
+    this.timeLeft = this.clearPassTime;
+  }
 
   async presentActionSheet(l: any) {
     const actionSheet = await this.actionSheetController.create({
@@ -137,11 +148,11 @@ export class Tab1Page {
   }
 
   addNew() {
-    this.router.navigateByUrl('/tabs/tab1/newentry');
+    this.router.navigateByUrl('/app/tabs/tab1/newentry');
   }
 
   editEntry(l: any) {
-    this.navCtrl.navigateForward(`/tabs/tab1/editentry/${l.name}/${l.email}/${l.password}/${l.id}`);
+    this.navCtrl.navigateForward(`/app/tabs/tab1/editentry/${l.id}`);
   }
 
   copyPassword(l: any) {
@@ -150,8 +161,7 @@ export class Tab1Page {
     }
     this.clipboard.copy(l.password);
     this.timeLeft = this.clearPassTime;
-    if(this.clearPassTime === 0)
-    {
+    if (this.clearPassTime === 0) {
       return;
     }
     this.interval = setInterval(() => {
@@ -170,7 +180,8 @@ export class Tab1Page {
       .then(() => {
         this.deletedToast(); this.ionViewWillEnter()
       });
-
-    await this.accounts.sync();
+    if (this.autoSync) {
+      await this.accounts.sync();
+    }
   }
 }

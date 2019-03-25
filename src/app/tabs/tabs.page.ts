@@ -8,22 +8,10 @@ import { Platform } from '@ionic/angular';
   styleUrls: ['tabs.page.scss']
 })
 export class TabsPage {
-  secretString = `${"ibrahim94ali"}:${"admin123"}`;
-  db = null;
-  accounts = null;
   constructor(private faio: FingerprintAIO, private platform: Platform) { }
   ngOnInit() {
 
     //this.fingerPrintScanner();
-
-    this.db = new window.Kinto({
-      remote: "https://kinto.dev.mozaws.net/v1/", headers: {
-        Authorization: "Basic " + btoa(this.secretString)
-      }
-    });
-
-    this.accounts = this.db.collection("accounts");
-    this.synchData();
   }
 
   fingerPrintScanner() {
@@ -40,9 +28,6 @@ export class TabsPage {
         navigator['app'].exitApp();
       });
 
-  }
-  async synchData() {
-    await this.accounts.sync();
   }
 
 }
