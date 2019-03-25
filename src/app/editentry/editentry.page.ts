@@ -12,7 +12,7 @@ var CryptoJS = require("crypto-js");
 })
 export class EditentryPage implements OnInit {
 
-  account = { name: "", email: "", password: "", id: "", credentials: "" };
+  account = { name: "", email: "", password: "", id: ""};
 
   showPass = true;
   db = null;
@@ -45,13 +45,12 @@ export class EditentryPage implements OnInit {
         this.account.name = arr.data.name;
         this.account.email = arr.data.email;
         this.account.password = this.deCipherPassword(arr.data.password);
-        this.account.credentials = arr.data.credentials;
       });
 }
 
   async autoSyncF(settings: any)
   {
-   await settings.list({filters: {credentials: this.secretString}})
+   await settings.list()
     .then(arr => {
       this.autoSync = arr.data[0].autoSync;
     });

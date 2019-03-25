@@ -38,7 +38,7 @@ export class NewentryPage implements OnInit {
 
   async autoSyncF(settings: any)
   {
-   await settings.list({filters: {credentials: this.secretString}})
+   await settings.list()
     .then(arr => {
       this.autoSync = arr.data[0].autoSync;
     });
@@ -49,7 +49,7 @@ export class NewentryPage implements OnInit {
     const accounts = this.db.collection("accounts");
 
 
-    await accounts.create({ name: this.account.name, email: this.account.email, password: this.account.password, credentials: this.secretString })
+    await accounts.create({ name: this.account.name, email: this.account.email, password: this.account.password})
       .then(() => {
         this.okToast();
         this.router.navigateByUrl('app/tabs/tab1');

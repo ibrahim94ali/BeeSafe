@@ -38,7 +38,7 @@ export class Tab2Page {
 
   async getSettings() {
     let myTimer;
-    await this.settings.list({filters: {credentials: this.secretString}})
+    await this.settings.list()
       .then((arr) => {
         if (arr.data.length > 0) {
           myTimer = arr.data[0].autoClear;

@@ -1,5 +1,4 @@
 import { Component } from '@angular/core';
-import { FingerprintAIO } from '@ionic-native/fingerprint-aio/ngx';
 import { Platform } from '@ionic/angular';
 
 @Component({
@@ -8,26 +7,8 @@ import { Platform } from '@ionic/angular';
   styleUrls: ['tabs.page.scss']
 })
 export class TabsPage {
-  constructor(private faio: FingerprintAIO, private platform: Platform) { }
+  constructor(private platform: Platform) { }
   ngOnInit() {
 
-    //this.fingerPrintScanner();
   }
-
-  fingerPrintScanner() {
-    this.faio.show({
-      clientId: 'Fingerprint-Demo',
-      clientSecret: 'password', //Only necessary for Android
-      disableBackup: false,  //Only for Android(optional)
-      localizedFallbackTitle: 'Use Pin', //Only for iOS
-      localizedReason: 'Please authenticate' //Only for iOS
-    })
-      .then((result: any) => console.log(result))
-      .catch((error: any) => {
-        console.log(error);
-        navigator['app'].exitApp();
-      });
-
-  }
-
 }

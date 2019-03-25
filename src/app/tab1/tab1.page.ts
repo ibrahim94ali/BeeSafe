@@ -57,7 +57,7 @@ export class Tab1Page {
 
 
   async getAccounts() {
-    await this.accounts.list({filters: {credentials: this.secretString}, order: "name" , })
+    await this.accounts.list({order: "name" })
       .then((arr) => {
         for (let i of arr.data) {
           i.password = this.deCipherPassword(i.password);
@@ -68,7 +68,7 @@ export class Tab1Page {
 
   async getSettings() {
     let myTimer;
-    await this.settings.list({filters: {credentials: this.secretString}})
+    await this.settings.list()
       .then((arr) => {
         if (arr.data.length > 0) {
           myTimer = arr.data[0].autoClear;

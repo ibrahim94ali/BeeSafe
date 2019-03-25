@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { Platform } from '@ionic/angular';
-import { async } from '@angular/core/testing';
+import { FingerprintAIO } from '@ionic-native/fingerprint-aio/ngx';
 
 @Injectable({
   providedIn: 'root'
@@ -13,7 +13,7 @@ export class AuthenticationService {
 
   authenticationState = new BehaviorSubject(false);
 
-  constructor(private plt: Platform) {
+  constructor(private plt: Platform, private faio: FingerprintAIO) {
     this.plt.ready().then(() => {
       this.checkToken();
     });
@@ -23,73 +23,69 @@ export class AuthenticationService {
     var settingsExist = false;
     this.profileId = btoa(secretString);
 
-    const tempDb = new window.Kinto({
-      remote: "https://kinto.dev.mozaws.net/v1/", headers: {
-        Authorization: "Basic " + btoa("admin")
-      }
-    });
-    const tempProfile = tempDb.collection("profile");
-    await tempProfile.create({ credentials: btoa(secretString) })
-
-
     this.db = new window.Kinto({
       remote: "https://kinto.dev.mozaws.net/v1/", headers: {
         Authorization: "Basic " + btoa(secretString)
       }
     });
     const settings = this.db.collection("settings");
+    const profile = this.db.collection("profile");
+    await profile.create({ credentials: btoa(secretString) });
 
-    let newSettings = { autoClear: "30s", fingerprint: false, autoFill: false, autoSync: true, credentials: this.profileId }
+    let newSettings = { autoClear: "30s", fingerprint: false, autoFill: false, autoSync: true}
 
-    await settings.list({filters: {credentials: this.profileId}})
-    .then(arr => {
-      if(arr.data.length !==  0)
-      {
-        return this.authenticationState.next(true);
-      }
-      else{
-        settingsExist = true;
-      }
-    })
-
-    if(settingsExist){
     await settings.create(newSettings)
     .then(() => {
+        this.syncdata(profile, settings);
         return this.authenticationState.next(true);
     });
-  }
-  }
-  async logout() {
-    let myprofile = null;
-    const tempDb = new window.Kinto({
-      remote: "https://kinto.dev.mozaws.net/v1/", headers: {
-        Authorization: "Basic " + btoa("admin")
-      }
-    });
-    const tempProfile = tempDb.collection("profile");
-    await tempProfile.list()
-    .then(arr => {
-      myprofile = arr.data[0];
-    });
+}
 
-    await tempProfile.delete(myprofile.id)
-    .then(()=>{
-      console.log(myprofile.id);
-      return this.authenticationState.next(false);
-    })
+async syncdata(profile:any, settings:any)
+{
+  await profile.sync();
+  await settings.sync();
+}
+
+  async logout() {
+    // let myprofile = null;
+    // const tempDb = new window.Kinto({
+    //   remote: "https://kinto.dev.mozaws.net/v1/", headers: {
+    //     Authorization: "Basic " + btoa("admin")
+    //   }
+    // });
+    // const tempProfile = tempDb.collection("profile");
+    // await tempProfile.list()
+    // .then(arr => {
+    //   myprofile = arr.data[0];
+    // });
+
+    // await tempProfile.delete(myprofile.id)
+    // .then(()=>{
+    //   console.log(myprofile.id);
+    //   return this.authenticationState.next(false);
+    // })
   }
 
   isAuthenticated() {
     return this.authenticationState.value;
   }
   async checkToken() {
+    var fPrint = false;
     const db = new window.Kinto({
       remote: "https://kinto.dev.mozaws.net/v1/", headers: {
         Authorization: "Basic " + btoa("admin")
       }
     });
-
+    const settings = db.collection("settings");
     const profile = db.collection("profile");
+    await settings.list()
+    .then(arr => {
+      if(arr.data.length > 0)
+      {
+        fPrint = arr.data[0].fingerprint;
+      }
+    });
     await profile.list()
       .then(arr => {
         console.log(arr);
@@ -97,13 +93,36 @@ export class AuthenticationService {
           this.profileId = arr.data[0].credentials;
       });
 
-    if (this.profileId !== null) {
-      this.authenticationState.next(true);
+    if (this.profileId !== null && fPrint === false) {
+      return this.authenticationState.next(true);
     }
+    else if(this.profileId !== null && fPrint)
+    {
+      this.fingerPrint();
+    }
+    else{
     return this.profileId;
+    }
   }
 
   getId() {
     return this.profileId;
+  }
+
+  async fingerPrint()
+  {
+    this.faio.show({
+      clientId: 'Fingerprint-Demo',
+      clientSecret: 'password', //Only necessary for Android
+      disableBackup: false,  //Only for Android(optional)
+      localizedFallbackTitle: 'Use Pin', //Only for iOS
+      localizedReason: 'Please authenticate' //Only for iOS
+    })
+      .then((result: any) => {console.log(result); this.authenticationState.next(true);})
+      .catch((error: any) => {
+        console.log(error);
+        this.authenticationState.next(false);
+        navigator['app'].exitApp();
+      });    
   }
 }

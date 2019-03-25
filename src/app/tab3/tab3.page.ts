@@ -8,7 +8,7 @@ import { AuthenticationService } from '../services/authentication.service';
   styleUrls: ['tab3.page.scss']
 })
 export class Tab3Page implements OnInit  {
-  settingsData = { autoClear: "30s", fingerprint: false, autoFill: false, id:"", autoSync: false, credentials: "" };
+  settingsData = { autoClear: "30s", fingerprint: false, autoFill: false, id:"", autoSync: false};
   duration = [true, false, false, false];
   db = null;
   settings = null;
@@ -39,7 +39,7 @@ export class Tab3Page implements OnInit  {
   }
 
   async getSettings() {
-    await this.settings.list({filters: {credentials: this.secretString}})
+    await this.settings.list()
       .then((arr) => {
         if(arr.data.length > 0){
         this.settingsData.autoClear = arr.data[0].autoClear;
@@ -47,7 +47,6 @@ export class Tab3Page implements OnInit  {
         this.settingsData.autoFill = arr.data[0].autoFill;
         this.settingsData.id = arr.data[0].id;
         this.settingsData.autoSync = arr.data[0].autoSync;
-        this.settingsData.credentials = arr.data[0].credentials;
         }
       })
       .catch(e => {
@@ -96,10 +95,6 @@ export class Tab3Page implements OnInit  {
     {
       this.duration = [false, false, false, true];
     }
-  }
-  async signOut()
-  {
-        this.authService.logout();
   }
 
   async changeDuration() {
