@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { Platform } from '@ionic/angular';
 import { FingerprintAIO } from '@ionic-native/fingerprint-aio/ngx';
+import { LoadingController } from '@ionic/angular';
 
 @Injectable({
   providedIn: 'root'
@@ -10,17 +11,18 @@ export class AuthenticationService {
 
   profileId = null;
   db = null;
+  loading = null;
 
   authenticationState = new BehaviorSubject(false);
 
-  constructor(private plt: Platform, private faio: FingerprintAIO) {
+  constructor(private plt: Platform, private faio: FingerprintAIO,public loadingController: LoadingController) {
     this.plt.ready().then(() => {
+      this.presentLoading();
       this.checkToken();
     });
   }
 
   async login(secretString: any) {
-    var settingsExist = false;
     this.profileId = btoa(secretString);
 
     this.db = new window.Kinto({
@@ -28,6 +30,8 @@ export class AuthenticationService {
         Authorization: "Basic " + btoa(secretString)
       }
     });
+    const accounts = this.db.collection("accounts");
+    await accounts.sync();
     const settings = this.db.collection("settings");
     const profile = this.db.collection("profile");
     await profile.create({ credentials: btoa(secretString) });
@@ -46,26 +50,6 @@ async syncdata(profile:any, settings:any)
   await profile.sync();
   await settings.sync();
 }
-
-  async logout() {
-    // let myprofile = null;
-    // const tempDb = new window.Kinto({
-    //   remote: "https://kinto.dev.mozaws.net/v1/", headers: {
-    //     Authorization: "Basic " + btoa("admin")
-    //   }
-    // });
-    // const tempProfile = tempDb.collection("profile");
-    // await tempProfile.list()
-    // .then(arr => {
-    //   myprofile = arr.data[0];
-    // });
-
-    // await tempProfile.delete(myprofile.id)
-    // .then(()=>{
-    //   console.log(myprofile.id);
-    //   return this.authenticationState.next(false);
-    // })
-  }
 
   isAuthenticated() {
     return this.authenticationState.value;
@@ -94,6 +78,7 @@ async syncdata(profile:any, settings:any)
       });
 
     if (this.profileId !== null && fPrint === false) {
+      this.dismissLoading();
       return this.authenticationState.next(true);
     }
     else if(this.profileId !== null && fPrint)
@@ -101,6 +86,7 @@ async syncdata(profile:any, settings:any)
       this.fingerPrint();
     }
     else{
+      this.dismissLoading();
     return this.profileId;
     }
   }
@@ -118,11 +104,26 @@ async syncdata(profile:any, settings:any)
       localizedFallbackTitle: 'Use Pin', //Only for iOS
       localizedReason: 'Please authenticate' //Only for iOS
     })
-      .then((result: any) => {console.log(result); this.authenticationState.next(true);})
+      .then((result: any) => {console.log(result); this.dismissLoading(); this.authenticationState.next(true);})
       .catch((error: any) => {
         console.log(error);
         this.authenticationState.next(false);
         navigator['app'].exitApp();
       });    
+  }
+
+  async presentLoading() {
+    this.loading = await this.loadingController.create({
+      message: 'Please Wait'
+    });
+    await this.loading.present();
+  }
+
+  async dismissLoading()
+  {
+    if(this.loading !== null)
+    await this.loading.dismiss();
+    else
+    this.dismissLoading();
   }
 }

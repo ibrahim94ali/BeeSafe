@@ -14,7 +14,7 @@ export class LoginPage implements OnInit {
     email : "",
     password : ""
   }
-
+  showPass = true;
 
   constructor(public alertCtrl: AlertController, public toastCtrl: ToastController, private router: Router,
     private authService: AuthenticationService) { }

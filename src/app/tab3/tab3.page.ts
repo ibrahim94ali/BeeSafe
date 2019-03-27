@@ -99,7 +99,7 @@ export class Tab3Page implements OnInit  {
 
   async changeDuration() {
     const alert = await this.alertController.create({
-      header: 'Auto-clear Password After',
+      header: 'Auto-clear Password from Clipboard After',
       inputs: [
         {
           name: '30s',
@@ -183,35 +183,12 @@ export class Tab3Page implements OnInit  {
   }
 
   async fingerprint() {
-    const alert = await this.alertController.create({
-      header: 'Fingerprint Scanner',
-      buttons: [
-        {
-          text: 'Disable',
-          cssClass: 'secondary',
-          handler: () => {
-            this.settingsData.fingerprint = false;
-            this.settings.update(this.settingsData);
-            if(this.settingsData.autoSync === true){
-            this.synchronize();
-            }
-            this.okToast();
-          }
-        }, {
-          text: 'Enable',
-          handler: () => {
-            this.settingsData.fingerprint = true;
-            this.settings.update(this.settingsData);
-            if(this.settingsData.autoSync === true){
-            this.synchronize();
-            }
-            this.okToast();
-          }
-        }
-      ]
-    });
+    this.settings.update(this.settingsData);
 
-    await alert.present();
+    if(this.settingsData.autoSync === true)
+    {
+      this.synchronize();
+    }
   }
 
 

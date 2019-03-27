@@ -10,11 +10,11 @@
 
 <ion-list>
   <ion-item (click)="changeDuration()">
-    <ion-label>Auto-clear Password from Clipboard </ion-label>
+    <ion-label>Auto-clearing Password Duration</ion-label>
   </ion-item>
 
   <ion-item (click)="autoSync()">
-    <ion-label>Auto-synchronize Your Safe </ion-label>
+    <ion-label>Auto-synchronizing Your Safe </ion-label>
     <ion-checkbox slot="end" [(ngModel)]="settingsData.autoSync"></ion-checkbox>
   </ion-item>
 
@@ -24,6 +24,7 @@
 
   <ion-item (click)="fingerprint()">
       <ion-label>Fingerprint Scanner</ion-label>
+      <ion-checkbox slot="end" [(ngModel)]="settingsData.fingerprint"></ion-checkbox>
     </ion-item>
   
 

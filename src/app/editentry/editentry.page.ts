@@ -13,6 +13,7 @@ var CryptoJS = require("crypto-js");
 export class EditentryPage implements OnInit {
 
   account = { name: "", email: "", password: "", id: ""};
+  savedAccount =  { name: "", email: "", password: "", id: "" };
 
   showPass = true;
   db = null;
@@ -57,10 +58,14 @@ export class EditentryPage implements OnInit {
   }
 
   async save() {
+    this.savedAccount.email = this.account.email;
+    this.savedAccount.name = this.account.name;
+    this.savedAccount.password = this.account.password;
+    this.savedAccount.id = this.account.id;
     this.cipherPassword();
     const accounts = this.db.collection("accounts");
 
-    await accounts.update(this.account)
+    await accounts.update(this.savedAccount)
       .then(() => {
         this.okToast();
         this.router.navigateByUrl('app/tabs/tab1');
@@ -81,8 +86,8 @@ export class EditentryPage implements OnInit {
   }
 
   cipherPassword() {
-    var ciphertext = CryptoJS.AES.encrypt(this.account.password, this.secretString).toString();
-    this.account.password = ciphertext;
+    var ciphertext = CryptoJS.AES.encrypt(this.savedAccount.password, this.secretString).toString();
+    this.savedAccount.password = ciphertext;
   }
   deCipherPassword(ciphertext: any) {
     // Decrypt
