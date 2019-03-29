@@ -110,14 +110,37 @@ export class Tab2Page {
         clearInterval(this.interval);
         this.timeLeft = this.clearPassTime;
         this.clipboard.clear();
+        this.clearedToast();
       }
     }, 1000);
 
   }
 
   async okToast() {
+    let time = this.clearPassTime;
+    if(time !== 0)
+    {
+        const toast = await this.toastController.create({
+        message: 'Your password is copied to clipboard for ' + time + ' seconds.',
+        position: 'top',
+        duration: 3000
+      });
+      toast.present();
+    }
+    else
+    {
+      const toast = await this.toastController.create({
+        message: 'Your password is copied to clipboard',
+        position: 'top',
+        duration: 3000
+      });
+      toast.present();
+    }
+  }
+
+  async clearedToast() {
     const toast = await this.toastController.create({
-      message: 'Your password is copied to clipboard for selected duration.',
+      message: 'Your password is cleared from clipboard',
       position: 'top',
       duration: 3000
     });
