@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { Platform } from '@ionic/angular';
 import { FingerprintAIO } from '@ionic-native/fingerprint-aio/ngx';
-import { LoadingController } from '@ionic/angular';
 
 @Injectable({
   providedIn: 'root'
@@ -11,13 +10,12 @@ export class AuthenticationService {
 
   profileId = null;
   db = null;
-  loading = null;
 
   authenticationState = new BehaviorSubject(false);
+  authenticationProcess = new BehaviorSubject(false);
 
-  constructor(private plt: Platform, private faio: FingerprintAIO,public loadingController: LoadingController) {
+  constructor(private plt: Platform, private faio: FingerprintAIO) {
     this.plt.ready().then(() => {
-      this.presentLoading();
       this.checkToken();
     });
   }
@@ -41,6 +39,7 @@ export class AuthenticationService {
     await settings.create(newSettings)
     .then(() => {
         this.syncdata(profile, settings);
+        this.authenticationProcess.next(true);
         return this.authenticationState.next(true);
     });
 }
@@ -78,7 +77,7 @@ async syncdata(profile:any, settings:any)
       });
 
     if (this.profileId !== null && fPrint === false) {
-      this.dismissLoading();
+      this.authenticationProcess.next(true);
       return this.authenticationState.next(true);
     }
     else if(this.profileId !== null && fPrint)
@@ -86,7 +85,7 @@ async syncdata(profile:any, settings:any)
       this.fingerPrint();
     }
     else{
-      this.dismissLoading();
+      this.authenticationProcess.next(true);
     return this.profileId;
     }
   }
@@ -104,26 +103,11 @@ async syncdata(profile:any, settings:any)
       localizedFallbackTitle: 'Use Pin', //Only for iOS
       localizedReason: 'Please authenticate' //Only for iOS
     })
-      .then((result: any) => {console.log(result); this.dismissLoading(); this.authenticationState.next(true);})
+      .then((result: any) => {console.log(result); this.authenticationProcess.next(true); this.authenticationState.next(true);})
       .catch((error: any) => {
         console.log(error);
         this.authenticationState.next(false);
         navigator['app'].exitApp();
       });    
-  }
-
-  async presentLoading() {
-    this.loading = await this.loadingController.create({
-      message: 'Please Wait'
-    });
-    await this.loading.present();
-  }
-
-  async dismissLoading()
-  {
-    if(this.loading !== null)
-    await this.loading.dismiss();
-    else
-    this.dismissLoading();
   }
 }

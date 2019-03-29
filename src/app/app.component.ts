@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 
-import { Platform } from '@ionic/angular';
+import { Platform, LoadingController } from '@ionic/angular';
 import { SplashScreen } from '@ionic-native/splash-screen/ngx';
 import { StatusBar } from '@ionic-native/status-bar/ngx';
 import { AuthenticationService } from './services/authentication.service';
@@ -16,12 +16,15 @@ window.Kinto = window.Kinto || {};
   templateUrl: 'app.component.html'
 })
 export class AppComponent {
+  loading = null;
+
   constructor(
     private platform: Platform,
     private splashScreen: SplashScreen,
     private statusBar: StatusBar,
     private authService: AuthenticationService,
-    private router: Router
+    private router: Router,
+    public loadingController: LoadingController
   ) {
     this.initializeApp();
   }
@@ -31,6 +34,20 @@ export class AppComponent {
       this.statusBar.backgroundColorByHexString('#ffffff');
       this.statusBar.styleDefault();
       this.splashScreen.hide();
+
+      this.authService.authenticationProcess.subscribe(state=> {
+        console.log('Process: ', state);
+        if(state){
+          //dismiss loader
+          this.dismissLoading();
+                              
+        }
+        else{
+          //create loader
+         this.presentLoading();
+          
+        }
+      });
 
       this.authService.authenticationState.subscribe(state=>{
         console.log('Auth changed: ', state);
@@ -43,5 +60,18 @@ export class AppComponent {
 
       });
     });
+  }
+
+  async presentLoading() {
+    this.loading = await this.loadingController.create({
+      message: 'Please Wait',
+      spinner: 'bubbles'
+    });
+    await this.loading.present();
+  }
+
+  async dismissLoading()
+  {
+    await this.loading.dismiss();
   }
 }
