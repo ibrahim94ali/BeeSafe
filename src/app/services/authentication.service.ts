@@ -2,6 +2,8 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { Platform } from '@ionic/angular';
 import { FingerprintAIO } from '@ionic-native/fingerprint-aio/ngx';
+declare var require: any
+var CryptoJS = require("crypto-js");
 
 @Injectable({
   providedIn: 'root'
@@ -21,18 +23,18 @@ export class AuthenticationService {
   }
 
   async login(secretString: any) {
-    this.profileId = btoa(secretString);
+    this.profileId = secretString;
 
     this.db = new window.Kinto({
       remote: "https://kinto.dev.mozaws.net/v1/", headers: {
-        Authorization: "Basic " + btoa(secretString)
+        Authorization: "Basic " +  this.profileId
       }
     });
     const accounts = this.db.collection("accounts");
     await accounts.sync();
     const settings = this.db.collection("settings");
     const profile = this.db.collection("profile");
-    await profile.create({ credentials: btoa(secretString) });
+    await profile.create({ credentials:  this.profileId });
 
     let newSettings = { autoClear: "30s", fingerprint: false, autoFill: false, autoSync: true}
 

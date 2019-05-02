@@ -20,7 +20,7 @@ export class Tab3Page implements OnInit  {
   
   ionViewWillEnter()
   {
-    console.log(this.settingsData);
+    //console.log(this.settingsData);
   }
 
   ngOnInit() {

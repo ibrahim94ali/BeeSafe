@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import {AlertController, ToastController } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { AuthenticationService } from '../services/authentication.service';
+declare var require: any
+var CryptoJS = require("crypto-js");
 
 @Component({
   selector: 'app-login',
@@ -31,7 +33,15 @@ export class LoginPage implements OnInit {
       return;
       }
 
-      const secretString = `${this.user.email}:${this.user.password}`;
+      var secretString = CryptoJS.SHA3(this.user.email + this.user.password, { outputLength: 256 });
+
+      secretString = secretString.toString(CryptoJS.enc.Hex);
+
+      //console.log("hashstring: " ,secretString);
+
+      //const secretString = btoa(`${this.user.email}:${this.user.password}`);
+
+      //console.log(secretString);
 
         this.authService.login(secretString);
   }
