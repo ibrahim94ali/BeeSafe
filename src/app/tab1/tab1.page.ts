@@ -98,11 +98,18 @@ export class Tab1Page {
     const actionSheet = await this.actionSheetController.create({
       header: l.name,
       buttons: [{
-        text: 'Copy Password',
-        icon: 'clipboard',
+        text: 'Copy Email / Username',
+        icon: 'mail',
         handler: () => {
-          this.copyPassword(l);
-          this.copiedToast();
+          this.copyEmailPassword(l, "email");
+          this.copiedToast("email");
+        }
+      },{
+        text: 'Copy Password',
+        icon: 'key',
+        handler: () => {
+          this.copyEmailPassword(l, "password");
+          this.copiedToast("password");
         }
       }, {
         text: 'View / Edit',
@@ -129,12 +136,12 @@ export class Tab1Page {
     await actionSheet.present();
   }
 
-  async copiedToast() {
+  async copiedToast(type:any) {
     let time = this.clearPassTime;
     if(time !== 0)
     {
         const toast = await this.toastController.create({
-        message: 'Your password is copied to clipboard for ' + time + ' seconds.',
+        message: 'Your ' + type + ' is copied to clipboard for ' + time + ' seconds.',
         position: 'top',
         duration: 3000
       });
@@ -143,7 +150,7 @@ export class Tab1Page {
     else
     {
       const toast = await this.toastController.create({
-        message: 'Your password is copied to clipboard',
+        message: 'Your ' + type + ' is copied to clipboard',
         position: 'top',
         duration: 3000
       });
@@ -151,9 +158,9 @@ export class Tab1Page {
     }
   }
 
-  async clearedToast() {
+  async clearedToast(type: any) {
     const toast = await this.toastController.create({
-      message: 'Your password is cleared from clipboard',
+      message: 'Your ' + type + ' is cleared from clipboard',
       position: 'top',
       duration: 3000
     });
@@ -177,11 +184,20 @@ export class Tab1Page {
     this.navCtrl.navigateForward(`/app/tabs/tab1/editentry/${l.id}`);
   }
 
-  copyPassword(l: any) {
+  copyEmailPassword(l: any, type: any) {
     if (this.timeLeft !== this.clearPassTime) {
       clearInterval(this.interval);
     }
+    if(type === "password"){
     this.clipboard.copy(l.password);
+    }
+    else if(type ==="email"){
+      this.clipboard.copy(l.email);
+    }
+    else
+    {
+      console.log("Bug");
+    }
     this.timeLeft = this.clearPassTime;
     if (this.clearPassTime === 0) {
       return;
@@ -193,7 +209,17 @@ export class Tab1Page {
         clearInterval(this.interval);
         this.timeLeft = this.clearPassTime;
         this.clipboard.clear();
-        this.clearedToast();
+
+        if(type === "password"){
+          this.clearedToast("password");
+          }
+          else if(type ==="email"){
+            this.clearedToast("email");
+          }
+          else
+          {
+            console.log("Bug");
+          }
       }
     }, 1000);
   }

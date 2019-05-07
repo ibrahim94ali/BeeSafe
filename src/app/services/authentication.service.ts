@@ -36,7 +36,7 @@ export class AuthenticationService {
     const profile = this.db.collection("profile");
     await profile.create({ credentials:  this.profileId });
 
-    let newSettings = { autoClear: "30s", fingerprint: false, autoFill: false, autoSync: true}
+    let newSettings = { autoClear: "30s", fingerprint: false, autoSync: true}
 
     await settings.create(newSettings)
     .then(() => {

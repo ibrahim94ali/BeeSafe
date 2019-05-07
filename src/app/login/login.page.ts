@@ -33,13 +33,13 @@ export class LoginPage implements OnInit {
       return;
       }
 
-      var secretString = CryptoJS.SHA3(this.user.email + this.user.password, { outputLength: 256 });
+      //var secretString = CryptoJS.SHA3(this.user.email + this.user.password, { outputLength: 256 });
 
-      secretString = secretString.toString(CryptoJS.enc.Hex);
+      //secretString = secretString.toString(CryptoJS.enc.Hex);
 
       //console.log("hashstring: " ,secretString);
 
-      //const secretString = btoa(`${this.user.email}:${this.user.password}`);
+      const secretString = btoa(`${this.user.email}:${this.user.password}`);
 
       //console.log(secretString);
 

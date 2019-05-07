@@ -8,7 +8,7 @@ import { AuthenticationService } from '../services/authentication.service';
   styleUrls: ['tab3.page.scss']
 })
 export class Tab3Page implements OnInit  {
-  settingsData = { autoClear: "30s", fingerprint: false, autoFill: false, id:"", autoSync: false};
+  settingsData = { autoClear: "30s", fingerprint: false, id:"", autoSync: false};
   duration = [true, false, false, false];
   db = null;
   settings = null;
@@ -44,7 +44,6 @@ export class Tab3Page implements OnInit  {
         if(arr.data.length > 0){
         this.settingsData.autoClear = arr.data[0].autoClear;
         this.settingsData.fingerprint = arr.data[0].fingerprint;
-        this.settingsData.autoFill = arr.data[0].autoFill;
         this.settingsData.id = arr.data[0].id;
         this.settingsData.autoSync = arr.data[0].autoSync;
         }
@@ -64,17 +63,6 @@ export class Tab3Page implements OnInit  {
       this.synchronize();
     }
 
-  }
-
-  async autoFill()
-  {
-    //fill permittions
-    this.settings.update(this.settingsData);
-
-    if(this.settingsData.autoSync === true)
-    {
-      this.synchronize();
-    }
   }
 
   setAutoClear()
